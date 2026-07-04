@@ -8,7 +8,11 @@ const { Sequelize, DataTypes, Op } = require('sequelize');
 const logger = require('../utils/logger');
 
 // ── Connection ───────────────────────────────────────────────
+// Kwa Neon (na mitandao inayozuia port 5432 moja kwa moja, kama
+// baadhi ya mitandao ya simu), tunatumia @neondatabase/serverless
+// kama dialectModule — inatumia WebSocket/HTTPS badala ya TCP ya moja kwa moja.
 const isNeon = (process.env.DATABASE_URL || '').includes('neon.tech');
+
 let dialectModule;
 if (isNeon) {
   const neonServerless = require('@neondatabase/serverless');
@@ -70,6 +74,7 @@ const Post = sequelize.define('Post', {
   userId:        { type: DataTypes.UUID, allowNull: false },
   content:       { type: DataTypes.TEXT, allowNull: false, validate: { len: [1, 2000] } },
   imageUrls:     { type: DataTypes.ARRAY(DataTypes.TEXT), defaultValue: [] },
+  videoUrl:      { type: DataTypes.TEXT },
   hashtags:      { type: DataTypes.ARRAY(DataTypes.STRING), defaultValue: [] },
   likesCount:    { type: DataTypes.INTEGER, defaultValue: 0 },
   commentsCount: { type: DataTypes.INTEGER, defaultValue: 0 },

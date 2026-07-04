@@ -6,6 +6,7 @@
 require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 async function migrate() {
   if (!process.env.DATABASE_URL) {
@@ -13,25 +14,12 @@ async function migrate() {
     process.exit(1);
   }
 
-  const isNeon = process.env.DATABASE_URL.includes('neon.tech');
-  let Pool, poolConfig;
-
-  if (isNeon) {
-    // Neon serverless driver - hutumia WebSocket/HTTPS badala ya TCP ya
-    // moja kwa moja, kuepuka ETIMEDOUT kwenye mitandao inayozuia port 5432
-    const neonServerless = require('@neondatabase/serverless');
-    neonServerless.neonConfig.webSocketConstructor = require('ws');
-    Pool = neonServerless.Pool;
-    poolConfig = { connectionString: process.env.DATABASE_URL };
-  } else {
-    Pool = require('pg').Pool;
-    poolConfig = {
-      connectionString: process.env.DATABASE_URL,
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    };
-  }
-
-  const pool = new Pool(poolConfig);
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production'
+      ? { rejectUnauthorized: false }
+      : (process.env.DATABASE_URL.includes('neon.tech') ? { rejectUnauthorized: false } : false),
+  });
 
   try {
     const sqlPath = path.join(__dirname, 'migration.sql');
@@ -41,7 +29,7 @@ async function migrate() {
     await pool.query(sql);
     console.log('✅ Migration imekamilika kikamilifu! Majedwali yote yameundwa.');
   } catch (err) {
-    console.error('❌ Migration imeshindwa:', err);
+    console.error('❌ Migration imeshindwa:', err.message);
     process.exit(1);
   } finally {
     await pool.end();

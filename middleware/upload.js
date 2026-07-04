@@ -11,7 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
+const imageStorage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => ({
     folder:         'udsm-social-hub',
@@ -21,16 +21,39 @@ const storage = new CloudinaryStorage({
   }),
 });
 
-const fileFilter = (req, file, cb) => {
+const videoStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => ({
+    folder:         'udsm-social-hub/videos',
+    resource_type:  'video',
+    allowed_formats:['mp4','mov','m4v','webm'],
+    public_id:      `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+  }),
+});
+
+const imageFileFilter = (req, file, cb) => {
   const allowed = ['image/jpeg','image/png','image/gif','image/webp'];
   if (allowed.includes(file.mimetype)) cb(null, true);
   else cb(new Error('Aina ya faili haikubaliwi. Tumia JPG, PNG, GIF, au WEBP'), false);
 };
 
+const videoFileFilter = (req, file, cb) => {
+  const allowed = ['video/mp4','video/quicktime','video/x-m4v','video/webm'];
+  if (allowed.includes(file.mimetype)) cb(null, true);
+  else cb(new Error('Aina ya video haikubaliwi. Tumia MP4, MOV, au WEBM'), false);
+};
+
 const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+  storage: imageStorage,
+  fileFilter: imageFileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max kwa picha
+});
+
+const uploadVideo = multer({
+  storage: videoStorage,
+  fileFilter: videoFileFilter,
+  limits: { fileSize: 60 * 1024 * 1024 }, // 60MB max kwa video/reel fupi
 });
 
 module.exports = upload;
+module.exports.uploadVideo = uploadVideo;

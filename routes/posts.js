@@ -60,7 +60,7 @@ router.get('/search', authenticate, async (req, res, next) => {
 // ── POST /api/posts ───────────────────────────────────────────
 router.post('/', authenticate, upload.array('images', 5), async (req, res, next) => {
   try {
-    let { content, hashtags, visibility } = req.body;
+    let { content, hashtags, visibility, videoUrl, imageUrls: bodyImageUrls } = req.body;
 
     if (!content?.trim()) return res.status(400).json({ error: 'Andika kitu!' });
     if (content.length > 2000) return res.status(400).json({ error: 'Post ndefu sana (max herufi 2000)' });
@@ -73,12 +73,18 @@ router.post('/', authenticate, upload.array('images', 5), async (req, res, next)
       hashtags = JSON.parse(hashtags);
     }
 
-    const imageUrls = req.files ? req.files.map(f => f.path) : [];
+    // Picha zaweza kuja moja kwa moja (multipart req.files) AU zikiwa
+    // zimeshapakiwa awali kupitia /upload/image (JSON imageUrls array)
+    let imageUrls = req.files ? req.files.map(f => f.path) : [];
+    if (!imageUrls.length && bodyImageUrls) {
+      imageUrls = typeof bodyImageUrls === 'string' ? JSON.parse(bodyImageUrls) : bodyImageUrls;
+    }
 
     const post = await Post.create({
       userId:     req.user.id,
       content:    content.trim(),
       imageUrls,
+      videoUrl:   videoUrl || null,
       hashtags,
       visibility: visibility || 'public',
     });

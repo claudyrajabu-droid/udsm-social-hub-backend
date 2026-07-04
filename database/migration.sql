@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS posts (
   user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   content         TEXT NOT NULL CHECK (length(content) <= 2000),
   image_urls      TEXT[] DEFAULT '{}',
+  video_url       TEXT,
   hashtags        TEXT[] DEFAULT '{}',
   likes_count     INTEGER NOT NULL DEFAULT 0,
   comments_count  INTEGER NOT NULL DEFAULT 0,
@@ -245,6 +246,10 @@ VALUES (
   true,
   true
 ) ON CONFLICT (email) DO NOTHING;
+
+-- ── ALTER: Ongeza video_url kwa posts zilizokwisha kuundwa ──────
+-- (Salama kuendesha mara nyingi - haitaathiri data iliyopo)
+ALTER TABLE posts ADD COLUMN IF NOT EXISTS video_url TEXT;
 
 -- ════════════════════════════════════════════════════════════
 --  Migration imekamilika! ✅
