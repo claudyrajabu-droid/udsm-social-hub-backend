@@ -19,6 +19,7 @@ const logger           = require('./utils/logger');
 const socketHandler    = require('./utils/socketHandler');
 
 const app    = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 
 // ── Socket.io Setup ──────────────────────────────────────────
