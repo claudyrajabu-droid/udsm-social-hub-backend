@@ -8,6 +8,7 @@ const { Op }  = require('sequelize');
 const { Post, User, Comment, Like, Notification } = require('../models');
 const { authenticate } = require('../middleware/auth');
 const upload = require('../middleware/upload');
+const { moderateContent } = require('../utils/ai');
 
 // ── GET /api/posts — Feed ─────────────────────────────────────
 router.get('/', authenticate, async (req, res, next) => {
@@ -64,6 +65,14 @@ router.post('/', authenticate, upload.array('images', 5), async (req, res, next)
 
     if (!content?.trim()) return res.status(400).json({ error: 'Andika kitu!' });
     if (content.length > 2000) return res.status(400).json({ error: 'Post ndefu sana (max herufi 2000)' });
+
+    // AI moderation - zuia maudhui hatari kabla ya kuchapisha
+    const modResult = await moderateContent(content);
+    if (modResult.flagged) {
+      return res.status(400).json({
+        error: `Post haiwezi kuchapishwa: ${modResult.reason || 'maudhui hayaruhusiwi'}`,
+      });
+    }
 
     // Extract hashtags from content if not provided
     if (!hashtags) {

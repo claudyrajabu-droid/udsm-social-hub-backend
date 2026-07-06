@@ -19,7 +19,6 @@ const logger           = require('./utils/logger');
 const socketHandler    = require('./utils/socketHandler');
 
 const app    = express();
-app.set("trust proxy", 1);
 const server = http.createServer(app);
 
 // ── Socket.io Setup ──────────────────────────────────────────
@@ -112,6 +111,7 @@ v1.use('/notifications',require('./routes/notifications'));
 v1.use('/search',       require('./routes/search'));
 v1.use('/upload',       require('./routes/upload'));
 v1.use('/admin',        require('./routes/admin'));
+v1.use('/ai',           require('./routes/ai'));
 
 app.use('/api/v1', v1);
 // Backward compat
