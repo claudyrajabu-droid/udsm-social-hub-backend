@@ -63,9 +63,9 @@ router.put('/:id', authenticate, async (req, res) => {
       return res.status(403).json({ error: 'Unaweza kuhariri profile yako tu' });
 
     const user = await User.findByPk(req.user.id);
-    const { name, bio, department, yearOfStudy, phone } = req.body;
+    const { name, bio, department, yearOfStudy, phone, coverUrl } = req.body;
 
-    await user.update({ name, bio, department, yearOfStudy, phone });
+    await user.update({ name, bio, department, yearOfStudy, phone, coverUrl });
     res.json({ message: 'Profile imesasishwa ✅', user });
   } catch {
     res.status(500).json({ error: 'Server error' });
